@@ -90,6 +90,7 @@ class SyncController extends FOSRestController implements ClassResourceInterface
     		} else {
     			try{
     				//NEED TO HAVE MORE ROBUST ERROR CHECKING
+    				
 					$this->createProduct($productData);
     			} catch (Exception $e) {
     				return FALSE;
