@@ -1,0 +1,22 @@
+stitch_labs_demo_homepage:
+    path:     /hello/{name}
+    defaults: { _controller: StitchLabsDemoBundle:Default:index }
+
+organisation:
+    type: rest
+    resource: StitchLabs\DemoBundle\Controller\OrganisationController
+
+user:
+    type: rest
+    parent: organisation
+    resource: StitchLabs\DemoBundle\Controller\UserController
+
+sync:
+    type: rest
+    resource: StitchLabs\DemoBundle\Controller\SyncController
+
+product:
+    type: rest
+    resource: StitchLabs\DemoBundle\Controller\ProductController
+
+

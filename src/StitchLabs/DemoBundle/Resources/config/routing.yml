@@ -1,0 +1,20 @@
+stitch_labs_demo_homepage:
+    path:     /hello/{name}
+    defaults: { _controller: StitchLabsDemoBundle:Default:index }
+
+get_sync:
+    type: rest
+    resource: StitchLabs\DemoBundle\Controller\SyncController
+
+post_syncs:
+    type: rest
+    resource: StitchLabs\DemoBundle\Controller\SyncController
+
+
+get_products:
+    type: rest
+    resource: StitchLabs\DemoBundle\Controller\ProductController
+
+get_product:
+    type: rest
+    resource: StitchLabs\DemoBundle\Controller\ProductController    

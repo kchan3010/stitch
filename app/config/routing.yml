@@ -1,0 +1,4 @@
+stitch_labs_demo:
+    type: rest
+    resource: "@StitchLabsDemoBundle/Resources/config/routing.yml"
+    prefix: /api
