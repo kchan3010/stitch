@@ -12,22 +12,12 @@ use StitchLabs\DemoBundle\Entity\Product;
 
 class SyncController extends FOSRestController implements ClassResourceInterface
 {
-	/**
-     * Get action
-     * @var integer $id Id of the entity
-     * @return array
-     *
-     * @Rest\View()
-     */
-    public function getAction($id)
-    {
-        
+	//this can be stored in a conf file or have
+    //different routes dictate which channels to use
+	
+	private static $channelsToUse = array("StitchLabs\DemoBundle\Channel\Vend", "StitchLabs\DemoBundle\Channel\Shopify");
 
-        return array(
-            'entity' => $id,
-        );
-    }
-
+	
     /**
      * Collection post action
      * @var Request $request
@@ -35,41 +25,51 @@ class SyncController extends FOSRestController implements ClassResourceInterface
      */
     public function postAction(Request $request)
     {
-        // $entity = new Organisation();
-        // $form = $this->createForm(new OrganisationType(), $entity);
-        // $form->bind($request);
+    	$channelList = $this->getChannels();
 
-        // if ($form->isValid()) {
-        //     $em = $this->getDoctrine()->getManager();
-        //     $em->persist($entity);
-        //     $em->flush();
+    	if(is_array($channelList) && !empty($channelList)) {
+    		$finalizedProducts = array();
+    		foreach ($channelList as $channel) {
+		    	$response = $channel->getAllProducts();
+    			$normalizedProducts = $channel->normalizeProducts($response);
 
-        //     return $this->redirectView(
-        //         $this->generateUrl(
-        //             'get_organisation',
-        //             array('id' => $entity->getId())
-        //         ),
-        //         Codes::HTTP_CREATED
-        //     );
-        // }
+    			//With multiple channels having the same sku, we need to know which one was updated last
+    			//so we can use that channel data
 
-    	    	
-    	$channel = new Shopify();
-
-    	$response = $channel->getAllProducts();
-    	$normalizedProducts = $channel->normalizeProducts($response);
-
-    	if(is_array($normalizedProducts) && !empty($normalizedProducts)) {
-			$response = $this->syncProducts($normalizedProducts);
+    			
+    			if(empty($finalizedProducts)) {
+    				//first channel sets $finalizedProducts - which is basically a lookup table now
+    				$finalizedProducts = $normalizedProducts;
+    			} else {
+    				foreach($normalizedProducts as $key=>$product) {
+    					if(isset($finalizedProducts[$key]) && !empty($finalizedProducts[$key])) {
+    						//check the same product exists
+    						//take the latest date    						
+    						if($finalizedProducts[$key]['udate'] < $normalizedProducts[$key]['udate']) {
+    							$finalizedProducts[$key] = $normalizedProducts[$key];
+    						}
+    					} else {
+    						$finalizedProducts[$key] = $normalizedProducts[$key];
+    					}
+    				}
+    			}
+    		}
     	}
 
-    	 
-    	
-    	// $em = $this->getDoctrine()->getManager();
-    	// $entity = $em->getRepository('StitchLabsDemoBundle:Product')->findBySku('blah');
+
+    	if(is_array($finalizedProducts) && !empty($finalizedProducts)) {
+			$response = $this->syncProducts($finalizedProducts);
+    	}
+
+    	if($response) {
+    		$em = $this->getDoctrine()->getManager();
+    		$entities  = $em->getRepository('StitchLabsDemoBundle:Product')->findAll();
+    	} else {
+    		$entities = FALSE;
+    	}
 
          return array(
-            'form' => $response
+            'entitiies' => $entities
         );
     }
 
@@ -90,13 +90,10 @@ class SyncController extends FOSRestController implements ClassResourceInterface
     		} else {
     			try{
     				//NEED TO HAVE MORE ROBUST ERROR CHECKING
-    				
 					$this->createProduct($productData);
     			} catch (Exception $e) {
     				return FALSE;
     			}
-
-    			$this->createProduct($productData);
     		}
     	}
 
@@ -115,7 +112,7 @@ class SyncController extends FOSRestController implements ClassResourceInterface
 
         $em = $this->getDoctrine()->getManager();
 	    $em->persist($existingProdObj);
-        // $em->flush();    	
+        
     }
 
     private function createProduct($prodData)
@@ -129,8 +126,18 @@ class SyncController extends FOSRestController implements ClassResourceInterface
 	    $em = $this->getDoctrine()->getManager();
 
 	    $em->persist($product);
-	    // $em->flush();    	
+	    
     }  
+
+    private function getChannels()
+    {
+    	$channelList = array();    	
+    	foreach(static::$channelsToUse as $channelName) {
+    		$channelList[] = new $channelName();
+    	}
+
+    	return $channelList;
+    }
 
     
 

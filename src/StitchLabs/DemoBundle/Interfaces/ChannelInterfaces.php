@@ -11,4 +11,6 @@ interface ChannelInterfaces {
 	public function getAllProducts();
 
 	public function getAllSkusFromResponse($response);
+
+	public function normalizeProducts($response);
 }

@@ -40,6 +40,8 @@ class ProductController extends FOSRestController implements ClassResourceInterf
      */
     public function getAction($id)
     {
+        //needs some validation run on the $id
+        
         $em = $this->getDoctrine()->getManager();
 
         $entity = $em->getRepository('StitchLabsDemoBundle:Product')->findOneById($id);

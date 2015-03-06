@@ -8,6 +8,8 @@ use StitchLabs\DemoBundle\Utils\CurlClient;
 class Shopify implements ChannelInterfaces 
 {
 	
+	const EIGHT_HOURS = 28800;
+
 	private $curlClient;
 	
 
@@ -59,18 +61,19 @@ class Shopify implements ChannelInterfaces
 	public function normalizeProducts($result)
 	{
 		$prodList = array();
-		$index = 0;
 
 		if(is_array($result) && !empty($result)) {
 			foreach($result['products'] as $product) {
 				if(isset($product['variants']) && is_array($product['variants'])) {
 					foreach($product['variants'] as $variant) {
-						$prodList[$index]['name'] 		= $product['title'];
-						$prodList[$index]['sku'] 		= $variant['sku'];
-						$prodList[$index]['quantity'] 	= $variant['inventory_quantity'];
-						$prodList[$index]['price'] 		= $variant['price'];
+						$prodList[$variant['sku']]['name'] 		= $product['title'];
+						$prodList[$variant['sku']]['sku'] 		= $variant['sku'];
+						$prodList[$variant['sku']]['quantity'] 	= $variant['inventory_quantity'];
+						$prodList[$variant['sku']]['price'] 	= $variant['price'];
+						// $prodList[$variant['sku']]['udate']		= strtotime($variant['updated_at']);
+						$updated = strtotime($variant['updated_at']);
+						$prodList[$variant['sku']]['udate']		= $updated + self::EIGHT_HOURS;
 
-						$index++;
 					}
 				}
 			}

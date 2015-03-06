@@ -4,6 +4,18 @@ namespace StitchLabs\DemoBundle\Utils;
 
 class CurlClient
 {
+    private $httpHeaders;
+
+    public function __construct($headers=NULL) 
+    {
+        $this->httpHeaders = array('Content-Type: application/json');
+        
+        if($headers != NULL) {
+            $this->httpHeaders = $headers;
+        }
+    }
+
+
 	public function executeCurl($url, $params=NULL, $method=NULL, & $rc=NULL) {
 
         $this->curl = curl_init($url);
@@ -15,7 +27,7 @@ class CurlClient
         curl_setopt($this->curl, CURLOPT_TIMEOUT,        30);
         curl_setopt($this->curl, CURLOPT_FOLLOWLOCATION, TRUE);
         curl_setopt($this->curl, CURLOPT_MAXREDIRS,      5);
-        curl_setopt($this->curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+        curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->httpHeaders);
         if ($method == "POST") {
             curl_setopt($this->curl,CURLOPT_POST, 1);
         }
