@@ -104,14 +104,31 @@ class SyncController extends FOSRestController implements ClassResourceInterface
 
     private function updateProduct($existingProdObj, $prodData)
     {
-        
-   	    $existingProdObj->setName($prodData['name']);
-	    $existingProdObj->setSku($prodData['sku']);
-	    $existingProdObj->setQuantity($prodData['quantity']);
-	    $existingProdObj->setPrice($prodData['price']);
+    	$productChanged = FALSE;
+        if($existingProdObj->getName() !== $prodData['name']) {
+        	$productChanged = TRUE;
+        	$existingProdObj->setName($prodData['name']);	
+        }
 
-        $em = $this->getDoctrine()->getManager();
-	    $em->persist($existingProdObj);
+        if($existingProdObj->getSku() !== $prodData['sku']) {
+        	$productChanged = TRUE;
+        	$existingProdObj->setSku($prodData['sku']);	
+        }
+
+        if($existingProdObj->getQuantity() !== $prodData['quantity']) {
+        	$productChanged = TRUE;
+        	$existingProdObj->setQuantity($prodData['quantity']);	
+        }
+   	    
+        if($existingProdObj->getPrice() !== $prodData['price']) {
+        	$productChanged = TRUE;
+        	$existingProdObj->setPrice($prodData['price']);	
+        }
+	    
+	    if($productChanged) {
+	        $em = $this->getDoctrine()->getManager();
+	    	$em->persist($existingProdObj);
+	    }
         
     }
 
